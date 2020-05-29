@@ -15,19 +15,22 @@
 const char *ssid = "ACDevice";
 const char *wpa2 = "MD123456789";
 
-String device_id;
+String device_id; //device id in db
 
+#define OUT1 D1
 // broker
 String clientId = "ESP8266Client-";
 const char *username = "zwccckwo";
 const char *pass = "lm8yAHH_5KWj";
 const char *mqtt_server = "m16.cloudmqtt.com";
 
-//api engin
+//api engin 
 #define AUTH_URL "http://api-engine-v1.herokuapp.com/auth/local"
 #define DEVICE_URL "http://api-engine-v1.herokuapp.com/api/v1/devices/"
 
-bool apFlag = true; //use this flage to make sure u run in AP mode or station mode  in loop()
+bool apFlag = true; //This flage  make sure u run in AP mode or station mode  in loop()
+
+//mqtt client
 WiFiClient espClient;
 PubSubClient client(espClient);
 
@@ -36,7 +39,7 @@ ESP8266WebServer server(80);
 const size_t capacityForMyData = JSON_OBJECT_SIZE(1) + 10;
 DynamicJsonDocument mydataDoc(capacityForMyData);
 
-//protoType
+// function protoType
 void setupAP(void);
 void launchServer();
 void FS_begin();
@@ -48,23 +51,21 @@ int check_device_id();
 void reconnect();
 void callback(char *topic, byte *payload, unsigned int length);
 int sgin_in_and_create_device();
-// String message="{\"ssid\":\"test\",\"pass\":\"test\"}";
 
 void handleRoot()
 {
   if (!server.hasArg("plain"))
   {
     Serial.println("no body");
-    server.send(200, "text/html", "Body not received");
+    server.send(200, "application/json", "{\"ok\":\"0\"}");
     return;
   }
   else
   {
     String message = server.arg("plain");
-    server.send(200, "application/json", message);
+    server.send(200, "application/json", "{\"ok\":\"1\"}");
     Serial.print("message:");
     Serial.println(message);
-    //Todo:save data
     Serial.println("Start Writing  * config.json * file");
     writeFile("/config.json", message.c_str());
     Serial.println("Finish Writing * config.json * file");
@@ -81,8 +82,13 @@ void handleRoot()
 void setup()
 {
   delay(200);
+  pinMode(OUT1, OUTPUT); 
   pinMode(LED_BUILTIN, OUTPUT); 
-  digitalWrite(LED_BUILTIN, HIGH); // Turn the LED off by making the voltage HIGH
+  digitalWrite(OUT1, LOW);  
+  //* Turn the LED_BUILTIN off by making the voltage HIGH
+  //* but actually the LED is on; this is because
+  //* it is active low on the ESP-01)       
+  digitalWrite(LED_BUILTIN, HIGH);
   Serial.begin(115200);
   Serial.println();
   //*init file system
@@ -90,18 +96,19 @@ void setup()
   //*check config file for ssid
   if (check_config() == 20)
   {
-    //* check if device is set to db
+  //* check if device is set to db
     //check device.json for device id
     if (check_device_id() == 20)
     {
-      // connect to broker
+      // if there is id in file 
+      //* connect to broker
       apFlag = false;
       client.setServer(mqtt_server, 11638);
       client.setCallback(callback);
       Serial.println("finish check_device_id()");
       return;
     }
-    // signin withe mail and password  ,  Create new device
+    //* signin withe mail and password  ,  Create new device
     if (sgin_in_and_create_device() == 20)
     {
       apFlag = false;
@@ -384,16 +391,16 @@ void callback(char *topic, byte *payload, unsigned int length)
   String value = mydataDoc["value"]; // "on"
   Serial.print("value: ");
   Serial.println(value);
-  // Switch on the LED if an 1 was received as first character
+  //* Switch on the LED [ ON ] if  "on" recieve or [ OFF ]if "off" recieve
   if (value == "on")
   {
     digitalWrite(LED_BUILTIN, LOW); // Turn the LED on (Note that LOW is the voltage level
-    // but actually the LED is on; this is because
-    // it is active low on the ESP-01)
+    digitalWrite(OUT1, HIGH); 
   }
   else
   {
     digitalWrite(LED_BUILTIN, HIGH); // Turn the LED off by making the voltage HIGH
+    digitalWrite(OUT1, LOW);        // Turn the LED off by making the voltage HIGH
   }
 }
 
