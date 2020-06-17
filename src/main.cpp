@@ -40,6 +40,8 @@ const size_t capacityForMyData = JSON_OBJECT_SIZE(1) + 10;
 DynamicJsonDocument mydataDoc(capacityForMyData);
 
 // function protoType
+void handleRoot();
+void handleReset();
 void setupAP(void);
 void launchServer();
 void FS_begin();
@@ -52,32 +54,6 @@ void reconnect();
 void callback(char *topic, byte *payload, unsigned int length);
 int sgin_in_and_create_device();
 
-void handleRoot()
-{
-  if (!server.hasArg("plain"))
-  {
-    Serial.println("no body");
-    server.send(200, "application/json", "{\"ok\":\"0\"}");
-    return;
-  }
-  else
-  {
-    String message = server.arg("plain");
-    server.send(200, "application/json", "{\"ok\":\"1\"}");
-    Serial.print("message:");
-    Serial.println(message);
-    Serial.println("Start Writing  * config.json * file");
-    writeFile("/config.json", message.c_str());
-    Serial.println("Finish Writing * config.json * file");
-    Serial.println("***********************************");
-    Serial.println("Start reading  * config.json * file");
-    readFile("/config.json");
-    Serial.println("Finish reading * config.json * file");
-    Serial.println("***********************************");
-    Serial.println("rest esp");
-    ESP.reset();
-  }
-}
 
 void setup()
 {
@@ -261,7 +237,6 @@ void launchServer(void)
 int check_config(void)
 {
   // const char* json = "{\"ssid\":\"\",\"wpa2\":\"\",\"email\":\"\",\"password\":\"\"}";
-
   //check if device have config file
   if (LittleFS.exists(CONFIG_PATH))
   {
@@ -510,6 +485,45 @@ int sgin_in_and_create_device()
   return 20;
 }
 
+void handleRoot()
+{
+  if (!server.hasArg("plain"))
+  {
+    Serial.println("no body");
+    server.send(200, "application/json", "{\"ok\":\"0\"}");
+    return;
+  }
+  else
+  {
+    String message = server.arg("plain");
+    server.send(200, "application/json", "{\"ok\":\"1\"}");
+    Serial.print("message:");
+    Serial.println(message);
+    Serial.println("Start Writing  * config.json * file");
+    writeFile("/config.json", message.c_str());
+    Serial.println("Finish Writing * config.json * file");
+    Serial.println("***********************************");
+    Serial.println("Start reading  * config.json * file");
+    readFile("/config.json");
+    Serial.println("Finish reading * config.json * file");
+    Serial.println("***********************************");
+    Serial.println("rest esp");
+    ESP.reset();
+  }
+}
+
+// void handleReset()
+// {
+//   Serial.println(" in reset ");
+//   //remove config data
+//   char* reset_json = "{\"ssid\":\"\",\"wpa2\":\"\",\"email\":\"\",\"password\":\"\"}";
+//   writeFile(CONFIG_PATH,reset_json);
+//   //remove ID
+//   reset_json="{\"_id\":\"5e922ff9cbb28432f45c4d7d\"}";
+//   writeFile(DEVICE_PATH,reset_json);
+//   server.send(200, "application/json", "{\"ok\":\"1\"}");
+//   ESP.reset();
+// }
 
 //* user json */
 
