@@ -9,6 +9,22 @@
         "vector": "cpp",
         "memory": "cpp",
         "random": "cpp",
-        "initializer_list": "cpp"
-    }
+        "initializer_list": "cpp",
+        "istream": "cpp",
+        "numeric": "cpp",
+        "ostream": "cpp",
+        "functional": "cpp",
+        "tuple": "cpp",
+        "limits": "cpp",
+        "ranges": "cpp",
+        "streambuf": "cpp",
+        "utility": "cpp"
+    },
+    "cSpell.words": [
+        "cloudmqtt",
+        "MDNS",
+        "RSSI",
+        "SSID",
+        "zwccckwo"
+    ]
 }
